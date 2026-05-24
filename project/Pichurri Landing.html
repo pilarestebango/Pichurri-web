@@ -1,0 +1,1045 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Pichurri — Your gut deserves a monster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
+<style>
+  /* ─── tokens (lifted from Pichurri src/theme/tokens.ts) ───────────── */
+  :root {
+    --lime: #A1EF8E;
+    --lavender: #876CCE;
+    --watermelon: #FF5A86;
+    --beach: #00E0DF;
+    --sunshine: #FDBF58;
+    --black: #000000;
+    --white: #FFFFFF;
+    --raised: #1A1A1A;
+    --muted: #9A9A9A;
+    --display: 'Anton', 'Arial Black', sans-serif;
+    --body: 'Inter', system-ui, sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  html {
+    scroll-behavior: auto; /* smooth via JS lerp */
+  }
+  body {
+    font-family: var(--body);
+    color: var(--black);
+    background: var(--white);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  a { color: inherit; text-decoration: none; }
+  img, svg { display: block; max-width: 100%; }
+
+  .display { font-family: var(--display); font-weight: 400; letter-spacing: 0.5px; line-height: 0.92; text-transform: uppercase; }
+  .body { font-family: var(--body); }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 14px; border-radius: 999px;
+    background: var(--black); color: var(--white);
+    font-family: var(--body); font-weight: 700; font-size: 12px;
+    letter-spacing: 1.4px; text-transform: uppercase;
+  }
+  .pill.invert { background: var(--white); color: var(--black); }
+
+  /* ─── nav ────────────────────────────────────────────────────────── */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px clamp(20px, 4vw, 48px);
+    color: var(--black);
+    transition: color .3s ease;
+  }
+  .nav.invert { color: var(--white); }
+  .nav .brand {
+    font-family: var(--display); font-size: 28px; letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .nav .links { display: flex; gap: 28px; align-items: center; }
+  .nav .links a {
+    font-family: var(--body); font-weight: 500; font-size: 14px;
+    letter-spacing: 0.4px;
+  }
+  .nav .cta {
+    background: var(--black); color: var(--white);
+    padding: 10px 18px; border-radius: 999px;
+    font-family: var(--body); font-weight: 700; font-size: 13px;
+    transition: background .3s ease, color .3s ease;
+  }
+  .nav.invert .cta { background: var(--white); color: var(--black); }
+  @media (max-width: 720px) { .nav .links a:not(.cta) { display: none; } }
+
+  /* ─── hero ───────────────────────────────────────────────────────── */
+  .hero {
+    position: relative;
+    background: var(--beach);
+    color: var(--black);
+    min-height: 100vh;
+    padding: 110px clamp(20px, 5vw, 80px) 60px;
+    display: flex; flex-direction: column; justify-content: center;
+    overflow: hidden;
+  }
+  @media (max-width: 800px) {
+    .hero {
+      min-height: auto;
+      padding-top: 260px;
+      padding-bottom: clamp(380px, 56vh, 580px);
+    }
+    .hero h1 { font-size: clamp(72px, 14vw, 110px); }
+  }
+  .hero h1 {
+    font-family: var(--display);
+    font-size: clamp(72px, 8vw, 140px);
+    line-height: 1.0;
+    letter-spacing: -1px;
+    margin: 0;
+    text-transform: uppercase;
+    position: relative; z-index: 3;
+  }
+  .hero .below {
+    display: block;
+    margin-top: 24px;
+    max-width: 620px;
+    position: relative; z-index: 3;
+  }
+  .hero .sub {
+    max-width: 560px;
+    font-size: clamp(15px, 1.4vw, 18px); line-height: 1.5;
+    color: var(--raised);
+    margin: 0 0 22px;
+  }
+  .ctas { display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 18px 26px; border-radius: 999px;
+    font-family: var(--body); font-weight: 700; font-size: 15px;
+    border: 2px solid var(--black);
+    cursor: pointer; transition: transform .15s ease, background .15s ease, color .15s ease;
+  }
+  .btn.primary { background: var(--black); color: var(--white); }
+  .btn.primary:hover { background: var(--white); color: var(--black); transform: translateY(-2px); }
+  .btn.ghost { background: transparent; color: var(--black); }
+  .btn.ghost:hover { background: var(--black); color: var(--white); transform: translateY(-2px); }
+  .btn .arrow { transition: transform .15s ease; }
+  .btn:hover .arrow { transform: translateX(4px); }
+
+  /* hero floating monster */
+  .hero .scene { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+  .hero .m-1-wrap {
+    position: absolute;
+    bottom: -6%; right: -6%;
+    width: clamp(380px, 52vw, 780px);
+    pointer-events: none;
+    will-change: transform;
+  }
+  .hero .monster {
+    width: 100%; height: auto; display: block;
+    filter: drop-shadow(0 8px 0 rgba(0,0,0,0.06));
+    transform: rotate(-8deg);
+    transform-origin: 50% 50%;
+  }
+  .hero .monster.shaking { animation: monsterShake .65s cubic-bezier(.36,.07,.19,.97); }
+  @keyframes monsterShake {
+    0%   { transform: rotate(-8deg)  translate(0, 0); }
+    10%  { transform: rotate(-14deg) translate(-4px, -2px); }
+    20%  { transform: rotate(-2deg)  translate(5px, 3px); }
+    30%  { transform: rotate(-13deg) translate(-3px, 2px); }
+    40%  { transform: rotate(-4deg)  translate(4px, -2px); }
+    55%  { transform: rotate(-11deg) translate(-2px, 1px); }
+    70%  { transform: rotate(-6deg)  translate(2px, -1px); }
+    85%  { transform: rotate(-9deg)  translate(-1px, 1px); }
+    100% { transform: rotate(-8deg)  translate(0, 0); }
+  }
+  @media (max-width: 800px) {
+    .hero .m-1-wrap { width: clamp(320px, 84vw, 540px); bottom: -4%; right: auto; left: 50%; transform: translateX(-50%); }
+  }
+  @keyframes drift1 {
+    from { transform: rotate(-8deg) translateY(0); }
+    to   { transform: rotate(-2deg) translateY(-22px); }
+  }
+
+  /* ─── pitch (dark) ───────────────────────────────────────────────── */
+  .pitch {
+    background: var(--black); color: var(--white);
+    padding: clamp(80px, 12vh, 160px) clamp(20px, 5vw, 80px);
+    position: relative; overflow: hidden;
+    min-height: 100vh; display: flex; align-items: center;
+  }
+  .pitch .grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 60px;
+    align-items: center;
+    max-width: 1400px; margin: 0 auto; width: 100%;
+  }
+  @media (max-width: 800px) { .pitch .grid { grid-template-columns: 1fr; } }
+  .pitch h2 {
+    font-family: var(--display);
+    color: var(--white);
+    font-size: clamp(48px, 7vw, 120px);
+    line-height: 1.02; margin: 0;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+  .pitch .copy { font-size: clamp(16px, 1.5vw, 19px); line-height: 1.5; color: #e9e9e9; max-width: 520px; }
+  .pitch .copy + .copy { margin-top: 18px; }
+  .pitch .floater {
+    position: absolute; right: -60px; top: -40px;
+    width: 280px; opacity: 0.9;
+  }
+  .pitch .floater svg path { fill: var(--lavender) !important; }
+  @keyframes bob { from { transform: translateY(0) rotate(8deg); } to { transform: translateY(20px) rotate(-4deg); } }
+
+  /* ─── features ───────────────────────────────────────────────────── */
+  .features { display: grid; }
+  .feature {
+    padding: clamp(60px, 8vh, 100px) clamp(40px, 6vw, 100px);
+    position: relative; overflow: hidden;
+    min-height: 100vh; display: flex; align-items: center;
+  }
+  .feature .row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+    align-items: center; max-width: 1600px; margin: 0 auto; width: 100%;
+  }
+  .feature .row.reverse { grid-template-columns: 1fr 1fr; }
+  .feature .row.reverse .text { order: 2; }
+  .feature .row.reverse .art  { order: 1; }
+  @media (max-width: 800px) {
+    .feature .row, .feature .row.reverse { grid-template-columns: 1fr; gap: 40px; }
+    .feature .row .text, .feature .row.reverse .text { order: 2; }
+    .feature .row .art,  .feature .row.reverse .art  { order: 1; }
+  }
+  .feature .num {
+    font-family: var(--body);
+    font-weight: 700;
+    font-size: clamp(13px, 1vw, 15px);
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    color: currentColor;
+  }
+  .feature h3 {
+    font-family: var(--display);
+    font-size: clamp(40px, 5.5vw, 88px);
+    line-height: 1.04; margin: 22px 0 28px;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+  .feature p {
+    font-size: clamp(16px, 1.4vw, 19px); line-height: 1.55;
+    max-width: 520px;
+  }
+  .feature .chips {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px;
+  }
+  .feature .chip {
+    background: transparent; color: currentColor;
+    padding: 10px 16px; border-radius: 999px;
+    border: 1.5px solid currentColor;
+    font-size: 12px; font-weight: 700; letter-spacing: 1.4px;
+    text-transform: uppercase;
+  }
+  .feature .chip.x { background: transparent; color: currentColor; }
+  .feature .art {
+    position: relative;
+    aspect-ratio: 1/1.25;
+    border-radius: 40px;
+    overflow: hidden;
+    background: rgba(0,0,0,0.08);
+    padding: 40px 60px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .feature .art .screen {
+    width: auto; height: auto;
+    max-width: 100%; max-height: 100%;
+    object-fit: contain;
+    border-radius: 28px;
+    box-shadow: 14px 16px 0 rgba(0,0,0,0.22);
+    display: block;
+  }
+  .feature .art .screen.dark { background: var(--black); }
+  .feature .art .monster {
+    position: absolute; inset: 8% 6%; width: 88%;
+    animation: wiggle 5s ease-in-out infinite alternate;
+  }
+  @keyframes wiggle {
+    from { transform: rotate(-4deg) translateY(-4px); }
+    to   { transform: rotate(4deg) translateY(6px); }
+  }
+  .feature .art .stamp {
+    position: absolute; top: 24px; left: 24px;
+    background: var(--black); color: var(--white);
+    padding: 8px 14px; border-radius: 999px;
+    font-family: var(--body); font-weight: 700; font-size: 12px;
+    letter-spacing: 1.4px; text-transform: uppercase;
+  }
+
+  .f-1 { background: var(--lavender); color: var(--black); }
+  .f-1 .feature_art_bg { background: rgba(255,255,255,0.18); }
+  .f-2 { background: var(--sunshine); color: var(--black); }
+  .f-3 { background: var(--watermelon); color: var(--black); }
+  .f-4 { background: var(--lime); color: var(--black); }
+
+  /* a reusable mini phone illustration that floats next to text */
+  .miniphone {
+    position: relative;
+    width: 100%; height: 100%;
+    display: grid; place-items: center;
+  }
+  .phone {
+    width: min(480px, 100%);
+    aspect-ratio: 9/19;
+    background: var(--white);
+    border-radius: 44px;
+    border: 6px solid var(--black);
+    padding: 18px;
+    position: relative;
+    box-shadow: 12px 14px 0 rgba(0,0,0,0.18);
+  }
+  .phone .notch {
+    width: 90px; height: 22px; border-radius: 12px;
+    background: var(--black); margin: 4px auto 14px;
+  }
+  .phone .level {
+    display: inline-block; margin: 0 auto;
+    background: var(--black); color: var(--white);
+    padding: 6px 14px; border-radius: 999px;
+    font-family: var(--body); font-weight: 700; font-size: 11px;
+    letter-spacing: 1.4px;
+  }
+  .phone .head { text-align: center; }
+  .phone .stage {
+    margin: 18px auto 12px;
+    width: 80%; aspect-ratio: 1;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    position: relative;
+  }
+  .phone .stage svg { width: 70%; }
+  .phone .name {
+    text-align: center;
+    font-family: var(--display);
+    font-size: 28px;
+    letter-spacing: 0.5px;
+    margin: 4px 0 2px;
+    text-transform: uppercase;
+  }
+  .phone .sub {
+    text-align: center; color: var(--muted);
+    font-size: 11px; line-height: 1.35; max-width: 80%; margin: 0 auto;
+  }
+  .phone .plus {
+    position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%);
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--black); color: var(--white);
+    display: grid; place-items: center;
+    font-size: 22px; font-weight: 300;
+  }
+  .phone .tabbar {
+    position: absolute; bottom: 16px; left: 16px; right: 16px;
+    background: var(--white);
+    box-shadow: 0 6px 22px rgba(0,0,0,0.08);
+    border-radius: 999px; height: 42px;
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    place-items: center;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .phone .tabbar .ti { font-weight: 700; }
+  .phone .tabbar .ti.active { color: var(--black); }
+
+  /* phone variants for each feature card */
+  .phone.f1 .stage { background: var(--beach); }
+  .phone.f2 .stage { background: var(--sunshine); }
+  .phone.f3 .stage { background: var(--watermelon); }
+  .phone.f4 .stage { background: var(--lime); }
+
+  /* chips screen (alt phone content) */
+  .phone.chipsy {
+    background: var(--raised); color: var(--white);
+    border-color: var(--raised);
+  }
+  .phone.chipsy .head .tabs {
+    display: flex; gap: 4px; padding: 4px;
+    background: rgba(255,255,255,0.06); border-radius: 999px;
+    width: max-content; margin: 6px auto 14px;
+  }
+  .phone.chipsy .tab {
+    padding: 6px 12px; border-radius: 999px; font-size: 11px; font-weight: 700;
+    color: #aaa;
+  }
+  .phone.chipsy .tab.on { background: var(--white); color: var(--black); }
+  .phone.chipsy h4 {
+    font-family: var(--display); font-size: 22px; line-height: 1;
+    margin: 4px 18px 14px; text-transform: uppercase;
+  }
+  .chipset { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 18px; }
+  .chipset .c {
+    background: #2A2A2A; color: var(--white);
+    padding: 6px 11px; border-radius: 999px; font-size: 11px;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .chipset .c .x { opacity: 0.6; }
+  .chipset .c.beach { background: var(--beach); color: var(--black); }
+  .chipset .c.wm { background: var(--watermelon); color: var(--black); }
+  .chipset .c.lav { background: var(--lavender); color: var(--white); }
+  .chipset .c.sun { background: var(--sunshine); color: var(--black); }
+
+  /* triggers screen (feature 3) */
+  .phone.triggers .head { text-align: left; padding: 0 4px; }
+  .phone.triggers .tabs {
+    display: flex; gap: 4px; padding: 4px;
+    background: rgba(0,0,0,0.06); border-radius: 999px;
+    width: max-content; margin: 4px auto 14px;
+  }
+  .phone.triggers .tab { padding: 6px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; color: var(--muted); }
+  .phone.triggers .tab.on { background: var(--white); color: var(--black); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .phone.triggers .chart {
+    background: var(--black); border-radius: 18px; padding: 14px;
+    margin: 0 4px 14px;
+  }
+  .phone.triggers .chart .title { color: var(--white); font-weight: 700; font-size: 12px; margin-bottom: 14px; }
+  .phone.triggers .bars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; height: 90px; align-items: end; }
+  .phone.triggers .bar { background: #2A2A2A; border-radius: 6px; height: 100%; position: relative; overflow: hidden; }
+  .phone.triggers .bar .fill {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    background: var(--beach);
+  }
+  .phone.triggers .bar .fill.alt { background: var(--watermelon); }
+  .phone.triggers .bar .fill.alt2 { background: var(--sunshine); }
+  .phone.triggers .label { font-size: 9px; font-weight: 700; letter-spacing: 1px; color: var(--muted); margin: 6px 4px 8px; }
+  .phone.triggers .trig {
+    background: #F1F4F5; border-radius: 12px; padding: 10px 12px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 6px 4px;
+  }
+  .phone.triggers .trig .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--beach); margin-right: 8px; }
+  .phone.triggers .trig .nm { font-weight: 700; font-size: 12px; }
+  .phone.triggers .trig .sub { color: var(--muted); font-size: 10px; }
+  .phone.triggers .trig .pct { font-weight: 700; font-size: 13px; }
+
+  /* streak screen (feature 4) */
+  .phone.streak .panel {
+    background: var(--black); color: var(--white);
+    border-radius: 22px; aspect-ratio: 1.1/1;
+    margin: 6px 4px 14px;
+    display: grid; place-content: center; text-align: center;
+  }
+  .phone.streak .num { font-family: var(--display); font-size: 80px; line-height: 1; }
+  .phone.streak .lab { font-weight: 700; letter-spacing: 1.4px; font-size: 11px; margin-top: 6px; }
+  .phone.streak .note { color: var(--muted); font-size: 11px; margin-top: 8px; }
+  .phone.streak .rank { padding: 0 4px; }
+  .phone.streak .rk-title { font-weight: 700; font-size: 10px; letter-spacing: 1.4px; margin: 0 0 8px 4px; color: var(--muted); }
+  .phone.streak .rk {
+    background: #F1F4F5; border-radius: 14px; padding: 10px 14px;
+    display: flex; align-items: center; gap: 12px; margin-bottom: 6px;
+  }
+  .phone.streak .rk .pos { font-family: var(--display); font-size: 22px; }
+  .phone.streak .rk .nm { font-weight: 700; font-size: 13px; }
+  .phone.streak .rk .sub { color: var(--muted); font-size: 10px; }
+
+  /* ─── evolution marquee ──────────────────────────────────────────── */
+  .evolve {
+    background: var(--black); color: var(--white);
+    padding: clamp(80px, 12vh, 140px) 0;
+    position: relative; overflow: hidden;
+    min-height: 100vh; display: flex; flex-direction: column; justify-content: center;
+  }
+  .evolve .marquee-wrap { overflow: hidden; padding: 20px 0; }
+  .evolve .head { text-align: left; max-width: 1100px; padding: 0 clamp(20px, 5vw, 80px); margin: 0 0 60px; }
+  .evolve h2 {
+    font-family: var(--display);
+    color: var(--white);
+    font-size: clamp(56px, 9vw, 140px); line-height: 1.02;
+    margin: 0 0 24px; text-transform: uppercase;
+  }
+  .evolve h2 .swap {
+    display: inline-block;
+    color: var(--beach);
+    transition: color .3s ease;
+  }
+  .evolve .head p { margin: 0; }
+  .marquee {
+    display: flex; gap: 0; overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+    padding: 40px 0;
+  }
+  .marquee .track {
+    display: flex; gap: 20px; animation: scroll 30s linear infinite;
+    flex-shrink: 0; padding: 0 10px;
+  }
+  .marquee .item {
+    width: 320px; height: 320px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    border-radius: 28px;
+    background: rgba(255,255,255,0.04);
+    transition: transform .3s ease, background .3s ease;
+    overflow: hidden;
+    padding: 28px;
+  }
+  .marquee .item img { max-width: 100%; max-height: 100%; }
+  .marquee .item:hover { transform: translateY(-6px) rotate(-3deg); background: rgba(255,255,255,0.08); }
+  .marquee .item svg { width: 70%; }
+  .marquee .item.b1 { background: var(--beach); }
+  .marquee .item.b2 { background: var(--lavender); }
+  .marquee .item.b3 { background: var(--watermelon); }
+  .marquee .item.b4 { background: var(--sunshine); }
+  .marquee .item.b5 { background: var(--lime); }
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ─── stats strip ────────────────────────────────────────────────── */
+  .stats {
+    background: var(--white); color: var(--black);
+    padding: clamp(60px, 8vh, 100px) clamp(20px, 5vw, 80px);
+    position: relative; overflow: hidden;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  }
+  .stats .grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 60px;
+    max-width: 1400px; margin: 0 auto; width: 100%;
+    position: relative; z-index: 2;
+  }
+  @media (max-width: 800px) { .stats .grid { grid-template-columns: 1fr; gap: 40px; } }
+  .stats .item { text-align: center; padding: 0 12px; }
+  .stats .item .n { font-family: var(--display); font-size: clamp(80px, 10vw, 160px); line-height: 1; }
+  .stats .item .l { font-family: var(--body); font-weight: 700; font-size: clamp(13px, 1vw, 15px); letter-spacing: 2px; text-transform: uppercase; margin-top: 14px; }
+  .stats .item .d { color: #555; font-size: 15px; line-height: 1.5; margin: 14px auto 0; max-width: 280px; }
+  /* one big greyscale monster behind stats */
+  .stats .deco {
+    position: absolute; left: 50%; top: 50%;
+    width: min(80vh, 80vw); max-width: 900px;
+    opacity: 0.05;
+    pointer-events: none; z-index: 1;
+  }
+
+  /* ─── final CTA ──────────────────────────────────────────────────── */
+  .final {
+    background: var(--watermelon); color: var(--black);
+    padding: clamp(80px, 12vh, 140px) clamp(20px, 5vw, 80px) clamp(40px, 6vh, 80px);
+    text-align: center;
+    position: relative; overflow: hidden;
+    min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .final .inner { max-width: 720px; position: relative; z-index: 2; text-align: center; }
+  .final p { margin-left: auto; margin-right: auto; }
+  .final .ctas { justify-content: center; }
+  .final .side-monster {
+    position: absolute;
+    left: 50%;
+    bottom: -10%;
+    top: auto;
+    transform: translateX(-50%);
+    width: clamp(520px, 78vw, 1050px);
+    opacity: 0.12;
+    pointer-events: none; z-index: 1;
+    mix-blend-mode: multiply;
+  }
+  .final .side-monster path,
+  .final .side-monster * { fill: var(--black) !important; }
+  @media (max-width: 900px) {
+    .final { text-align: center; align-items: center; }
+    .final .side-monster { width: clamp(360px, 100vw, 700px); bottom: -8%; }
+  }
+  .final h2 {
+    font-family: var(--display);
+    font-size: clamp(72px, 11vw, 180px); line-height: 1.02;
+    margin: 0 0 32px; text-transform: uppercase;
+    position: relative; z-index: 2;
+  }
+  .final p {
+    font-size: clamp(16px, 1.5vw, 20px); line-height: 1.5;
+    max-width: 560px; margin: 0 auto 36px;
+    position: relative; z-index: 2;
+  }
+  .final .ctas { justify-content: center; position: relative; z-index: 2; }
+  .final .bottom-monster {
+    display: none;
+  }
+
+  /* ─── monster spotlight (last block) ──────────────────────────── */
+  .spotlight {
+    background: var(--black); color: var(--white);
+    position: relative; overflow: hidden;
+    min-height: 100vh; display: grid; place-items: center;
+    padding: clamp(40px, 8vh, 100px) clamp(20px, 5vw, 80px);
+  }
+  .spotlight .big-monster {
+    width: clamp(420px, 70vw, 900px);
+    height: auto; display: block;
+    pointer-events: none;
+    filter: brightness(0) invert(1);
+  }
+  .spotlight .big-monster path,
+  .spotlight .big-monster * { fill: var(--black) !important; }
+
+  /* ─── footer ─────────────────────────────────────────────────────── */
+  footer {
+    background: var(--white); color: var(--black);
+    padding: 60px clamp(20px, 5vw, 80px) 40px;
+  }
+  footer .top {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 40px; flex-wrap: wrap; padding-bottom: 40px;
+    border-bottom: 1px solid #e5e5e5;
+  }
+  footer .brand { font-family: var(--display); font-size: 56px; line-height: 1; text-transform: uppercase; }
+  footer .brand small { display: block; font-family: var(--body); font-size: 13px; font-weight: 500; color: #777; margin-top: 8px; letter-spacing: 0.6px; text-transform: none; }
+  footer .cols { display: flex; gap: 60px; flex-wrap: wrap; }
+  footer .col h5 { font-family: var(--body); font-weight: 700; font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; color: #777; margin: 0 0 14px; }
+  footer .col a { display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; opacity: 0.9; color: var(--black); }
+  footer .col a:hover { color: var(--lavender); }
+  footer .bottom {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 24px; font-size: 12px; color: #777; flex-wrap: wrap; gap: 12px;
+  }
+
+  .hero h1 .type-word { display: inline-block; min-height: 1em; opacity: 0; transition: opacity .25s ease; }
+  .hero h1 .type-word.in { opacity: 1; }
+
+  /* ─── scroll reveal ──────────────────────────────────────────────── */
+  .section { position: relative; }
+  .reveal { opacity: 0; transform: translateY(28px); transition: opacity .8s ease, transform .8s ease; }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+  .reveal.delay-1 { transition-delay: 0.08s; }
+  .reveal.delay-2 { transition-delay: 0.16s; }
+  .reveal.delay-3 { transition-delay: 0.24s; }
+
+  /* parallax: scroll-driven on supporting browsers, harmless fallback */
+  @supports (animation-timeline: view()) {
+    .pllx-up   { animation: pllxUp linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
+    .pllx-down { animation: pllxDown linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
+    .pllx-zoom { animation: pllxZoom linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
+  }
+  @keyframes pllxUp   { from { transform: translateY(80px); } to { transform: translateY(-80px); } }
+  @keyframes pllxDown { from { transform: translateY(-40px); } to { transform: translateY(40px); } }
+  @keyframes pllxZoom { from { transform: scale(0.92); } to { transform: scale(1.06); } }
+
+  /* shape decorations removed */
+  .footer-icon {
+    display: inline-block; vertical-align: -6px; margin: 0 4px;
+    width: 22px; height: 22px;
+    filter: brightness(0);
+  }
+</style>
+</head>
+<body>
+
+<!-- nav -->
+<nav class="nav" id="nav">
+  <a class="brand" href="#">Pichurri</a>
+  <div class="links">
+    <a href="#story">Story</a>
+    <a href="#features">Features</a>
+    <a href="#evolve">Monsters</a>
+    <a href="#download" class="cta">Get the app</a>
+  </div>
+</nav>
+
+<!-- ─────────── HERO ─────────── -->
+<header class="hero section" data-nav="light">
+  <div class="scene" aria-hidden="true">
+    <div class="m-1-wrap" data-pllx="-0.18">
+      <img class="monster m-1" src="assets/monster_hero.svg" alt="" />
+    </div>
+  </div>
+  <h1 class="reveal">
+    Your gut<br/>
+    <span class="type-word" data-word="Deserves"></span><br/>
+    <span class="type-word" data-word="a monster"></span>
+  </h1>
+  <div class="below">
+    <p class="sub reveal delay-1" style="font-size: 17px; color: rgb(0, 0, 0)">IBS tracking is usually a clinical nightmare of checkboxes and guilt. Pichurri turns it into a survival game. Meet your new gut buddy, a digital monster who lives (or dies) based on what you eat and how you feel.</p>
+    <div class="ctas reveal delay-2">
+      <a href="#download" class="btn primary">Get on the App Store <span class="arrow">→</span></a>
+      <a href="#story" class="btn ghost">Meet your monster</a>
+    </div>
+  </div></header>
+
+<!-- ─────────── PITCH ─────────── -->
+<section class="pitch section" id="story" data-nav="dark">
+  <img class="floater" src="assets/monster_03.svg" alt="" aria-hidden="true" data-pllx="-0.4" style="transform: rotate(8deg)" />
+  <div class="grid">
+    <h2 class="reveal">
+      Stop tracking<br/>
+      Start playing
+    </h2>
+    <div class="reveal delay-1">
+      <p class="copy" style="color: rgb(255, 255, 255); font-size: 17px">Let's be real: IBS is a lonely, boring, frankly annoying journey of clinical logs and beige diets. We ditched the spreadsheets for a Tamagotchi-style survival game where the stakes are your monster's life... and your own comfort.</p>
+      <p class="copy" style="color: rgb(255, 255, 255); font-size: 18px">
+        "Lazy-logging" AI and psychological habit loops make the hardest part
+        of IBS (the tracking) the most addictive part of your day. It's not
+        just an app; it's a gut-health revolution that actually stays on
+        your home screen.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── FEATURES ─────────── -->
+<section class="features" id="features">
+
+  <!-- f1: lazy logging -->
+  <div class="feature f-1 section" data-nav="light">
+    <div class="row">
+      <div class="text reveal">
+        <div class="num">01 &nbsp; Lazy logging</div>
+        <h3>No more typing:<br/>Snap and done</h3>
+        <p>
+          Our AI decomposes your plate to find the hidden ingredients in
+          seconds. Snap a photo, speak naturally, and let the monster
+          figure out the rest.
+        </p>
+        <div class="chips">
+          <span class="chip">Snap</span>
+          <span class="chip">Save time</span>
+          <span class="chip">AI does the work</span>
+        </div>
+      </div>
+      <div class="art reveal delay-1">
+        <img class="screen dark" src="assets/screen_food.png" alt="Pichurri food entry screen" />
+      </div>
+    </div>
+  </div>
+
+  <!-- f2: evolution -->
+  <div class="feature f-2 section" data-nav="light">
+    <div class="row reverse">
+      <div class="text reveal">
+        <div class="num">02 &nbsp; Evolution</div>
+        <h3>Feed it well<br/>Watch it evolve</h3>
+        <p>
+          Stay consistent and your buddy grows from a tiny shaking egg into a
+          beastly legend. Lose your streak, and things might get a little…
+          quiet.
+        </p>
+        <div class="chips">
+          <span class="chip">Day 1 Egg</span>
+          <span class="chip">Day 14 Blob</span>
+          <span class="chip">Day 60 Legend</span>
+        </div>
+      </div>
+      <div class="art reveal delay-1">
+        <img class="screen" src="assets/screen_egg.png" alt="Pichurri Sandrita egg screen" />
+      </div>
+    </div>
+  </div>
+
+  <!-- f3: trigger foods -->
+  <div class="feature f-3 section" data-nav="light">
+    <div class="row">
+      <div class="text reveal">
+        <div class="num">03 &nbsp; Villains</div>
+        <h3>Unmask the foods playing roulette with you</h3>
+        <p>Pichurri maps your flare-ups against your meals to identify the exact trigger foods sabotaging your week. No medical degrees required. Just punchy, actionable insights.</p>
+        <div class="chips">
+          <span class="chip">Fructans</span>
+          <span class="chip">Lactose</span>
+          <span class="chip">Sorbitol</span>
+          <span class="chip">GOS</span>
+        </div>
+      </div>
+      <div class="art reveal delay-1">
+        <img class="screen" src="assets/screen_fodmap.png" alt="Pichurri FODMAP insights screen" />
+      </div>
+    </div>
+  </div>
+
+  <!-- f4: streaks / social -->
+  <div class="feature f-4 section" data-nav="light">
+    <div class="row reverse">
+      <div class="text reveal">
+        <div class="num">04 &nbsp; Streaks</div>
+        <h3>Compete for the throne of the microbiome</h3>
+        <p>
+          Compare feeding streaks with friends and see who's really the
+          master of their gut. Social discipline beats willpower every
+          single time.
+        </p>
+        <div class="chips">
+          <span class="chip">Streaks</span>
+          <span class="chip">Ranking</span>
+          <span class="chip">Collection</span>
+        </div>
+      </div>
+      <div class="art reveal delay-1">
+        <img class="screen" src="assets/screen_streak.png" alt="Pichurri streak ranking screen" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── EVOLUTION MARQUEE ─────────── -->
+<section class="evolve section" id="evolve" data-nav="dark">
+  <div class="head">
+    <h2 class="reveal">
+      From <span class="swap" id="swap">egg</span><br/>
+      to legend
+    </h2>
+    <p class="reveal delay-1" style="color: rgb(255, 255, 255); max-width: 560px; margin: 0; font-size: 17px; line-height: 1.5">
+      Every monster in your collection is a souvenir of weeks of consistent
+      tracking. Some are cute. Some are unhinged. All are yours.
+    </p>
+  </div>
+  <div class="marquee">
+    <div class="track">
+      <div class="item b1"><img src="assets/monster_01.svg" alt="" /></div>
+      <div class="item b2"><img src="assets/monster_02.svg" alt="" /></div>
+      <div class="item b3"><img src="assets/monster_03.svg" alt="" /></div>
+      <div class="item b4"><img src="assets/monster_04.svg" alt="" /></div>
+      <div class="item b5"><img src="assets/monster_05.svg" alt="" /></div>
+      <div class="item b1"><img src="assets/monster_06.svg" alt="" /></div>
+      <div class="item b2"><img src="assets/monster_07.svg" alt="" /></div>
+      <div class="item b3"><img src="assets/monster_08.svg" alt="" /></div>
+      <div class="item b4"><img src="assets/monster_09.svg" alt="" /></div>
+      <div class="item b5"><img src="assets/monster_10.svg" alt="" /></div>
+      <div class="item b1"><img src="assets/monster_11.svg" alt="" /></div>
+      <div class="item b2"><img src="assets/monster_kid05.svg" alt="" /></div>
+      <div class="item b3"><img src="assets/monster_old01.svg" alt="" /></div>
+      <div class="item b4"><img src="assets/monster_old02.svg" alt="" /></div>
+      <div class="item b5"><img src="assets/monster_old04.svg" alt="" /></div>
+      <div class="item b1"><img src="assets/monster_old05.svg" alt="" /></div>
+      <div class="item b2"><img src="assets/monster_01.svg" alt="" /></div>
+      <div class="item b3"><img src="assets/monster_02.svg" alt="" /></div>
+      <div class="item b4"><img src="assets/monster_03.svg" alt="" /></div>
+      <div class="item b5"><img src="assets/monster_04.svg" alt="" /></div>
+      <div class="item b1"><img src="assets/monster_05.svg" alt="" /></div>
+      <div class="item b2"><img src="assets/monster_06.svg" alt="" /></div>
+      <div class="item b3"><img src="assets/monster_07.svg" alt="" /></div>
+      <div class="item b4"><img src="assets/monster_08.svg" alt="" /></div>
+      <div class="item b5"><img src="assets/monster_09.svg" alt="" /></div>
+      <div class="item b1"><img src="assets/monster_10.svg" alt="" /></div>
+      <div class="item b2"><img src="assets/monster_11.svg" alt="" /></div>
+      <div class="item b3"><img src="assets/monster_kid05.svg" alt="" /></div>
+      <div class="item b4"><img src="assets/monster_old01.svg" alt="" /></div>
+      <div class="item b5"><img src="assets/monster_old02.svg" alt="" /></div>
+      <div class="item b1"><img src="assets/monster_old04.svg" alt="" /></div>
+      <div class="item b2"><img src="assets/monster_old05.svg" alt="" /></div>
+    </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── STATS ─────────── -->
+<section class="stats section" data-nav="light">
+  <img class="deco" src="assets/monster_09.svg" alt="" aria-hidden="true" data-pllx="-0.15" style="transform: translate(-50%, -50%) rotate(-3deg)" />
+  <div class="grid">
+    <div class="item reveal">
+      <div class="n">03</div>
+      <div class="l">Sec to log a meal</div>
+      <div class="d" style="color: rgb(0, 0, 0); font-size: 15px">Snap or speak. The AI fills in the rest. Even your grandma's stew.
+
+</div>
+    </div>
+    <div class="item reveal delay-1">
+      <div class="n">22</div>
+      <div class="l">Monsters to collect</div>
+      <div class="d" style="font-size: 16px; color: rgb(0, 0, 0)">A new beast every level-up. Keep your streak alive to meet them all.</div>
+    </div>
+    <div class="item reveal delay-2">
+      <div class="n">00</div>
+      <div class="l">Medical degrees needed</div>
+      <div class="d" style="font-size: 15px; color: rgb(0, 0, 0)">Zero jargon, all wisdom. Insights on what your gut actually needs.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── FINAL CTA ─────────── -->
+<section class="final section" id="download" data-nav="light">
+  <img class="side-monster" src="assets/monster_final.svg" alt="" data-pllx="-0.12" style="transform: translateX(-50%); display: none" />
+  <div class="inner">
+    <h2 class="reveal">Your monster<br/>is hungry</h2>
+    <p class="reveal delay-1" style="font-size: 17px">Tame the beast. Unmask the villains. Win the streak. Your gut is a monster. It's time you named it.</p>
+    <div class="ctas reveal delay-2">
+      <a href="#" class="btn primary">Download for iOS <span class="arrow">→</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── MONSTER SPOTLIGHT ─────────── -->
+<section class="spotlight section" data-nav="dark" aria-hidden="true">
+  <img class="big-monster" src="assets/monster_final.svg" alt="" data-pllx="-0.15" />
+</section>
+
+<footer>
+  <div class="top">
+    <div>
+      <div class="brand">Pichurri<small>Your gut deserves a monster.</small></div>
+    </div>
+    <div class="cols">
+      <div class="col">
+        <h5>Product</h5>
+        <a href="#features">Features</a>
+        <a href="#evolve">Monsters</a>
+        <a href="#">Roadmap</a>
+        <a href="#">Pricing</a>
+      </div>
+      <div class="col">
+        <h5>Company</h5>
+        <a href="#">About</a>
+        <a href="#">Press kit</a>
+        <a href="#">Contact</a>
+      </div>
+      <div class="col">
+        <h5>Follow</h5>
+        <a href="#">Instagram</a>
+        <a href="#">TikTok</a>
+        <a href="#">Twitter</a>
+      </div>
+    </div>
+  </div>
+  <div class="bottom">
+    <span>© 2026 Pichurri Labs. Not a medical device. Just a really good buddy.</span>
+    <span>Made with <img class="footer-icon" src="assets/icon_heart.svg" alt="" /> <img class="footer-icon" src="assets/icon_skull.svg" alt="" /> <img class="footer-icon" src="assets/icon_monster.svg" alt="" /></span>
+  </div>
+</footer>
+
+<script>
+  // ── hero h1 word-by-word reveal ──
+  (function revealHeroWords() {
+    const words = document.querySelectorAll('.hero h1 .type-word');
+    words.forEach(w => { w.textContent = w.dataset.word; });
+    const STAGGER = 700;
+    const START = 350;
+    words.forEach((w, i) => {
+      setTimeout(() => w.classList.add('in'), START + i * STAGGER);
+    });
+  })();
+
+  // ── scroll reveal ──
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // ── nav color: switch based on which section the nav sits over ──
+  const nav = document.getElementById('nav');
+  const sections = [...document.querySelectorAll('.section')];
+  function updateNav() {
+    const probeY = (nav.offsetHeight || 60) / 2 + 4;
+    let active = null;
+    for (const s of sections) {
+      const r = s.getBoundingClientRect();
+      if (r.top <= probeY && r.bottom > probeY) { active = s; break; }
+    }
+    if (active) {
+      nav.classList.toggle('invert', active.getAttribute('data-nav') === 'dark');
+    }
+  }
+  window.addEventListener('scroll', updateNav, { passive: true });
+  window.addEventListener('resize', updateNav);
+  updateNav();
+
+  // ── hero monster: first shake at 1.5s, then every 4s ──
+  const heroMonster = document.querySelector('.hero .m-1');
+  const heroPool = [
+    'monster_hero.svg',
+    'monster_kid05.svg',
+    'monster_old01.svg',
+    'monster_old02.svg',
+    'monster_old04.svg',
+    'monster_old05.svg',
+  ].map(n => 'assets/' + n);
+  let heroIdx = 0;
+  function cycleHeroMonster() {
+    if (!heroMonster) return;
+    heroMonster.classList.remove('shaking');
+    void heroMonster.offsetWidth; // force reflow to restart animation
+    heroMonster.classList.add('shaking');
+    setTimeout(() => {
+      heroIdx = (heroIdx + 1) % heroPool.length;
+      heroMonster.src = heroPool[heroIdx];
+    }, 320);
+    setTimeout(() => heroMonster.classList.remove('shaking'), 700);
+  }
+  setTimeout(() => {
+    cycleHeroMonster();
+    setInterval(cycleHeroMonster, 4000);
+  }, 1500);
+
+  // ── parallax: translate decoration elements relative to scroll ──
+  // base transform is captured from inline style (so initial rotate/translate
+  // expressions survive). JS appends translate3d after that base.
+  const pllxEls = [...document.querySelectorAll('[data-pllx]')].map(el => {
+    return {
+      el,
+      speed: parseFloat(el.dataset.pllx) || 0,
+      base: el.style.transform || '',
+      section: el.closest('section, header'),
+    };
+  });
+
+  let scrollY = window.scrollY;
+  let targetY = scrollY;
+  let rafId = null;
+
+  function updateParallax() {
+    const vh = window.innerHeight;
+    pllxEls.forEach(({ el, speed, base, section }) => {
+      if (!section) return;
+      const rect = section.getBoundingClientRect();
+      // progress: -1 when section just entering from below, +1 when leaving top
+      const center = rect.top + rect.height / 2;
+      const progress = (center - vh / 2) / vh; // ~-1 to ~+1
+      const offset = progress * speed * 100; // px
+      // preserve base transform; reset inline if it was getComputedStyle (matrix)
+      const baseT = base && base !== 'none' && !base.startsWith('matrix') ? base : '';
+      el.style.transform = `${baseT} translate3d(0, ${offset}px, 0)`;
+    });
+  }
+
+  function loop() {
+    // simple lerp for buttery motion
+    scrollY += (targetY - scrollY) * 0.18;
+    updateParallax();
+    if (Math.abs(targetY - scrollY) > 0.1) {
+      rafId = requestAnimationFrame(loop);
+    } else {
+      rafId = null;
+    }
+  }
+
+  function onScroll() {
+    targetY = window.scrollY;
+    if (!rafId) rafId = requestAnimationFrame(loop);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', updateParallax);
+  updateParallax();
+
+  // ── word swap in evolve section ──
+  const swap = document.getElementById('swap');
+  const words = ['egg', 'blob', 'beast', 'legend', 'icon'];
+  const colors = ['var(--beach)','var(--lime)','var(--watermelon)','var(--sunshine)','var(--lavender)'];
+  let i = 0;
+  setInterval(() => {
+    i = (i + 1) % words.length;
+    swap.style.opacity = 0;
+    setTimeout(() => {
+      swap.textContent = words[i];
+      swap.style.color = colors[i];
+      swap.style.opacity = 1;
+    }, 200);
+  }, 2200);
+  swap.style.transition = 'opacity .2s ease, color .3s ease';
+</script>
+
+</body>
+</html>
+
+<style id="__om-edit-overrides">
+.item .item >div:nth-child(1) { color: rgb(0, 0, 0) !important }
+.item .item >div:nth-child(1) { font-size: 16px !important }
+</style>

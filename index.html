@@ -260,8 +260,11 @@ footer     { position: relative; z-index: 19; }
 .feature .row.reverse .text { order: 2; }
 .feature .row.reverse .art  { order: 1; }
 @media (max-width: 800px) {
+  .feature {
+    padding: 32px clamp(20px, 5vw, 40px) 48px;
+  }
   .feature .row,
-  .feature .row.reverse { grid-template-columns: 1fr; gap: 36px; }
+  .feature .row.reverse { grid-template-columns: 1fr; gap: 28px; }
   .feature .row .text,
   .feature .row.reverse .text { order: 2; }
   .feature .row .art,
@@ -269,6 +272,7 @@ footer     { position: relative; z-index: 19; }
   .feature .art {
     width: 100%;
     max-height: none;
+    aspect-ratio: 1 / 1;
   }
   .feature .row.reverse .art { margin-left: 0; }
 }

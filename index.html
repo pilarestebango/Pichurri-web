@@ -59,6 +59,15 @@ img, svg { display: block; max-width: 100%; }
 }
 .nav.invert .cta { background: var(--white); color: var(--black); }
 @media (max-width: 720px) { .nav .links a:not(.cta) { display: none; } }
+@media (max-width: 800px) {
+  .nav {
+    position: sticky;
+    top: 0;
+    background: var(--black);
+    color: var(--white) !important;
+  }
+  .nav .cta { background: var(--white); color: var(--black); }
+}
 
 /* ── sticky stacking ─────────────────────────────────────────────── */
 /* Each section sticks at top:0 and the next slides up over it.
@@ -261,7 +270,7 @@ footer     { position: relative; z-index: 19; }
 .feature .row.reverse .art  { order: 1; }
 @media (max-width: 800px) {
   .feature {
-    padding: 72px clamp(20px, 5vw, 36px) 48px;
+    padding: 40px clamp(20px, 5vw, 36px) 48px;
   }
   .feature .row,
   .feature .row.reverse {

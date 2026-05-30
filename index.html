@@ -304,7 +304,7 @@ footer     { position: relative; z-index: 19; }
 .feature .art {
   position: relative;
   aspect-ratio: 1 / 1.25;
-  max-height: clamp(300px, 58vh, 580px);
+  max-height: clamp(360px, 70vh, 696px);
   width: auto;
   border-radius: 40px;
   overflow: hidden;
@@ -313,6 +313,7 @@ footer     { position: relative; z-index: 19; }
   display: flex; align-items: center; justify-content: center;
   transition: transform .4s cubic-bezier(.34,1.56,.64,1);
 }
+.feature .row.reverse .art { margin-left: auto; }
 .feature .art:hover { transform: translateY(-6px) rotate(-1deg); }
 .feature .art .screen {
   width: auto; height: auto;

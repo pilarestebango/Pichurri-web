@@ -261,20 +261,24 @@ footer     { position: relative; z-index: 19; }
 .feature .row.reverse .art  { order: 1; }
 @media (max-width: 800px) {
   .feature {
-    padding: 32px clamp(20px, 5vw, 40px) 48px;
+    padding: 72px clamp(20px, 5vw, 36px) 48px;
   }
   .feature .row,
-  .feature .row.reverse { grid-template-columns: 1fr; gap: 28px; }
-  .feature .row .text,
-  .feature .row.reverse .text { order: 2; }
-  .feature .row .art,
-  .feature .row.reverse .art  { order: 1; }
-  .feature .art {
-    width: 100%;
-    max-height: none;
-    aspect-ratio: 1 / 1.25;
+  .feature .row.reverse {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 28px;
   }
-  .feature .row.reverse .art { margin-left: 0; }
+  .feature .art {
+    order: -1 !important;
+    width: 100% !important;
+    max-height: none !important;
+    aspect-ratio: 1 / 1.25;
+    margin-left: 0 !important;
+  }
+  .feature .text {
+    order: 0 !important;
+  }
 }
 .feature .num {
   font-family: var(--body);

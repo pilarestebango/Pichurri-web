@@ -282,14 +282,16 @@ footer     { position: relative; z-index: 19; }
     order: -1 !important;
     width: 100% !important;
     max-height: none !important;
-    aspect-ratio: unset !important;
+    aspect-ratio: 1 / 1 !important;
     margin-left: 0 !important;
-    padding: 24px 24px 46px 24px;
+    padding: 24px;
     height: auto;
+    display: flex; align-items: center; justify-content: center;
   }
   .feature .art .screen {
-    width: 78%;
-    height: auto;
+    width: auto;
+    height: calc(100% - 48px);
+    max-width: 100%;
     max-height: none;
   }
   .feature .text {
